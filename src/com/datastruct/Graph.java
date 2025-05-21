@@ -248,7 +248,8 @@ public class Graph<T> {
         if (neighbors != null) {
             Node<Edge<T>> curr = neighbors.head;
             while (curr != null) {
-                pq.offer(new Edge<>(curr.getData().getNeighbor(), curr.getData().getWeight()));
+                pq.offer(new Edge<>(start, curr.getData().getNeighbor(), curr.getData().getWeight()));
+
                 curr = curr.getNext();
             }
         }
@@ -266,7 +267,7 @@ public class Graph<T> {
                     Node<Edge<T>> curr = nextNeighbors.head;
                     while (curr != null) {
                         if (!mstSet.contains(curr.getData().getNeighbor())) {
-                            pq.offer(new Edge<>(curr.getData().getNeighbor(), curr.getData().getWeight()));
+                            pq.offer(new Edge<>(start, curr.getData().getNeighbor(), curr.getData().getWeight()));
                         }
                         curr = curr.getNext();
                     }
