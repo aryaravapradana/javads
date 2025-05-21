@@ -7,11 +7,13 @@ package com.datastruct;
 import java.util.*;
 
 class Edge<T> { 
+	T vertex;
 	private T neighbor; //connected vertex
 	private int weight; //weight
 	
 	//Constructor, Time O(1) Space O(1)
-	public Edge(T v, int w) {
+	public Edge(T u, T v, int w) {
+		this.vertex = u;
 		this.neighbor = v; 
 		this.weight = w;
 	}
@@ -51,10 +53,10 @@ public class Graph<T> {
 	public void addEdge(T a, T b, int w) {
 		adj.putIfAbsent(a, new MyLinearList<>()); //add node
 		adj.putIfAbsent(b, new MyLinearList<>()); //add node
-		Edge<T> edge1 = new Edge<>(b, w);
+		Edge<T> edge1 = new Edge<>(a, b, w);
 		adj.get(a).pushQ(edge1);//add(edge1); //add edge
 		if (!directed) { //undirected
-			Edge<T> edge2 = new Edge<>(a, w);
+			Edge<T> edge2 = new Edge<>(a, b, w);
 			adj.get(b).pushQ(edge2);
 		}			
 	}
@@ -236,7 +238,117 @@ public class Graph<T> {
         }
         System.out.println();
     }
-}
+	    public void primMST(T start) {
+        Set<T> mstSet = new HashSet<>();
+        PriorityQueue<Edge<T>> pq = new PriorityQueue<>(Comparator.comparingInt(Edge::getWeight));
+        Map<T, T> parent = new HashMap<>();
+
+        mstSet.add(start);
+        MyLinearList<Edge<T>> neighbors = adj.get(start);
+        if (neighbors != null) {
+            Node<Edge<T>> curr = neighbors.head;
+            while (curr != null) {
+                pq.offer(new Edge<>(curr.getData().getNeighbor(), curr.getData().getWeight()));
+                curr = curr.getNext();
+            }
+        }
+
+        while (!pq.isEmpty()) {
+            Edge<T> edge = pq.poll();
+            T neighbor = edge.getNeighbor();
+            if (!mstSet.contains(neighbor)) {
+                mstSet.add(neighbor);
+                parent.put(neighbor, findParentInMST(neighbor, mstSet));
+                System.out.println(parent.get(neighbor) + " - " + neighbor + " : " + edge.getWeight());
+
+                MyLinearList<Edge<T>> nextNeighbors = adj.get(neighbor);
+                if (nextNeighbors != null) {
+                    Node<Edge<T>> curr = nextNeighbors.head;
+                    while (curr != null) {
+                        if (!mstSet.contains(curr.getData().getNeighbor())) {
+                            pq.offer(new Edge<>(curr.getData().getNeighbor(), curr.getData().getWeight()));
+                        }
+                        curr = curr.getNext();
+                    }
+                }
+            }
+        }
+    }
+
+    private T findParentInMST(T node, Set<T> mstSet) {
+        MyLinearList<Edge<T>> neighbors = adj.get(node);
+        if (neighbors != null) {
+            Node<Edge<T>> curr = neighbors.head;
+            while (curr != null) {
+                if (mstSet.contains(curr.getData().getNeighbor())) {
+                    return curr.getData().getNeighbor();
+                }
+                curr = curr.getNext();
+            }
+        }
+        return null;
+    }
+
+    // Tambahkan algoritma Kruskal
+    public void kruskalMST() {
+        List<KruskalEdge<T>> edges = new ArrayList<>();
+        Map<T, T> parent = new HashMap<>();
+
+        // Inisialisasi parent untuk union-find
+        for (T node : adj.keySet()) {
+            parent.put(node, node);
+            MyLinearList<Edge<T>> neighbors = adj.get(node);
+            if (neighbors != null) {
+                Node<Edge<T>> curr = neighbors.head;
+                while (curr != null) {
+                    T neighbor = curr.getData().getNeighbor();
+                    int weight = curr.getData().getWeight();
+                    if (directed || node.hashCode() <= neighbor.hashCode()) {
+                        edges.add(new KruskalEdge<>(node, neighbor, weight));
+                    }
+                    curr = curr.getNext();
+                }
+            }
+        }
+
+        edges.sort(Comparator.comparingInt(e -> e.weight));
+
+        for (KruskalEdge<T> edge : edges) {
+            T root1 = find(parent, edge.node1);
+            T root2 = find(parent, edge.node2);
+
+            if (!root1.equals(root2)) {
+                System.out.println(edge.node1 + " - " + edge.node2 + " : " + edge.weight);
+                union(parent, root1, root2);
+            }
+        }
+    }
+
+    private T find(Map<T, T> parent, T node) {
+        if (!parent.get(node).equals(node)) {
+            parent.put(node, find(parent, parent.get(node)));
+        }
+        return parent.get(node);
+    }
+
+    private void union(Map<T, T> parent, T node1, T node2) {
+        T root1 = find(parent, node1);
+        T root2 = find(parent, node2);
+        parent.put(root1, root2);
+    }
+
+    private static class KruskalEdge<T> {
+        T node1, node2;
+        int weight;
+
+        KruskalEdge(T node1, T node2, int weight) {
+            this.node1 = node1;
+            this.node2 = node2;
+            this.weight = weight;
+        }
+    }
+} // end of Graph class
+
 
 
 	
