@@ -2,7 +2,6 @@
 // Jika Graph.java berada di package com.datastruct, tambahkan `import com.datastruct.Graph;`
 
 import com.datastruct.Graph;
-import java.util.List;
 
 public class graphtoporder {
     public static void main(String[] args) {
@@ -24,8 +23,7 @@ public class graphtoporder {
 
         // Lakukan topological sort
         try {
-            List<String> topo = g.topologicalSort();
-            System.out.println("Topological Ordering: " + topo);
+            g.topologicalSort();
         } catch (IllegalStateException ex) {
             System.err.println("Error: " + ex.getMessage());
         }
