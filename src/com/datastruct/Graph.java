@@ -100,6 +100,7 @@ public class Graph<T> {
 			}
 			current = current.getNext();
 		}
+        
 	}
 
 	//BFS
@@ -348,6 +349,59 @@ public class Graph<T> {
             this.weight = weight;
         }
     }
+    // Topological Sort
+    public List<T> topologicalSort() {
+        // 1. Hitung indegree tiap vertex
+        Map<T, Integer> indegree = new HashMap<>();
+        // inisialisasi semua vertex dengan indegree 0
+        for (T u : adj.keySet()) {
+            indegree.put(u, 0);
+        }
+        // naikkan indegree berdasarkan setiap edge u -> v
+        for (T u : adj.keySet()) {
+            MyLinearList<Edge<T>> list = adj.get(u);
+            Node<Edge<T>> curr = list.head;
+            while (curr != null) {
+                T v = curr.getData().getNeighbor();
+                indegree.put(v, indegree.get(v) + 1);
+                curr = curr.getNext();
+            }
+        }
+
+        // 2. Masukkan semua vertex dengan indegree 0 ke queue
+        Queue<T> q = new LinkedList<>();
+        for (Map.Entry<T, Integer> e : indegree.entrySet()) {
+            if (e.getValue() == 0) {
+                q.add(e.getKey());
+            }
+        }
+
+        // 3. Proses queue
+        List<T> topoOrder = new ArrayList<>();
+        while (!q.isEmpty()) {
+            T u = q.poll();
+            topoOrder.add(u);
+            // kurangi indegree tetangga
+            MyLinearList<Edge<T>> list = adj.get(u);
+            Node<Edge<T>> curr = list.head;
+            while (curr != null) {
+                T v = curr.getData().getNeighbor();
+                indegree.put(v, indegree.get(v) - 1);
+                if (indegree.get(v) == 0) {
+                    q.add(v);
+                }
+                curr = curr.getNext();
+            }
+        }
+
+        // 4. Jika ada vertex yang belum diproses => ada siklus
+        if (topoOrder.size() != adj.size()) {
+            throw new IllegalStateException("Graph contains a cycle, topological sort not possible");
+        }
+
+        return topoOrder;
+    }
+
 } // end of Graph class
 
 
